@@ -97,8 +97,8 @@ if __name__ == '__main__':
     args.model_id = 'EMB_16_2'
     args.data = 'stock'
     args.features = 'M'
-    args.seq_len = 5
-    args.label_len = 3
+    args.seq_len = 12
+    args.label_len = 10
     args.pred_len = 2
     args.e_layers = 6
     args.d_layers = 4
@@ -111,9 +111,9 @@ if __name__ == '__main__':
     args.learning_rate = 0.0005
     args.itr = 1
     args.stocks = True
-    args.batch_size = 1
+    args.batch_size = 4
     args.train_epochs = 50
-    args.freq = 't'
+    args.freq = 'd'
     args.use_multi_gpu = False
     args.target = 'M'
 

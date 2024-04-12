@@ -588,9 +588,14 @@ class Dataset_Stock(Dataset):
         num_train = int(len(df_data) * 0.7)
         num_test = int(len(df_data) * 0.2)
         num_valid = int(len(df_data) * 0.1)
-        if num_train -self.seq_len <= 0 :
-            self.data_x = []
-            self.data_y = []
+        if self.set_type == 0:
+            if num_train -self.seq_len <= 0 :
+                self.data_x = []
+                self.data_y = []
+        # if self.set_type == 1:
+        #     if num_valid -self.seq_len <= 0 :
+        #         self.data_x = []
+        #         self.data_y = []
         border1s = [0, num_train  - self.seq_len ,  len(df_data) - num_test - self.pred_len]
         border2s = [num_train, num_train + num_valid, len(df_data)]
         border1 = border1s[self.set_type]
@@ -610,7 +615,7 @@ class Dataset_Stock(Dataset):
             data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
             data_stamp = data_stamp.transpose(1, 0)
        
-        df_code_idx = df_raw[['idx']][border1:border2]
+        df_code_idx = df_raw[['idx']] #[border1:border2]
 
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]][2:]
@@ -625,7 +630,7 @@ class Dataset_Stock(Dataset):
         self.data_stamp = data_stamp
         #self.code_idx = df_code_idx
 
-        self.code = df_code_idx.iloc[0,0]
+        self.code = df_code_idx.iloc[0].values
         #print(self.code )
 
     def __getitem__(self, index):

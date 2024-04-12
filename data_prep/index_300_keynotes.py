@@ -21,7 +21,7 @@ llm = LLM(model_name, trust_remote_code=True,dtype=torch.float16,tensor_parallel
 from vllm import LLM, SamplingParams
 import pandas as pd
 import json
-data_path = "/home/userroot/dev/iTransformer/data/iTransformer_datasets/test_stock_news.jsonl"
+data_path = "/data/stock_news.jsonl"
 df_news = pd.read_json(data_path,lines=True)
 from transformers import AutoModel
 from numpy.linalg import norm
@@ -44,7 +44,7 @@ with open('index_300_keynotes.jsonl','w',encoding='utf-8') as f:
         sampling_params = SamplingParams(temperature=0, top_p=0.95, max_tokens=300)
         key_note = llm.generate(prompt,sampling_params)[0].outputs[0].text
         line['key_note'] = key_note
-        cos_sim = lambda a,b: (a @ b.T) / (norm(a)*norm(b))
+        #cos_sim = lambda a,b: (a @ b.T) / (norm(a)*norm(b))
         # trust_remote_code is needed to use the encode method
         embeddings = model.encode([key_note, news])
         line['embeddings'] = embeddings

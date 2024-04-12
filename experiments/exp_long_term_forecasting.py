@@ -54,6 +54,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 # decoder input
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+                dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+                dec_inp = batch_y[:, -self.args.pred_len:, :].clone()
+                dec_inp[:,-self.args.pred_len:,0:9] = 0
+                
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
                 # encoder - decoder
                 if self.args.use_amp:
@@ -125,6 +129,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 # decoder input
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+                dec_inp = batch_y[:, -self.args.pred_len:, :].clone()
+                dec_inp[:,-self.args.pred_len:,0:9] = 0
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
 
                 # encoder - decoder
