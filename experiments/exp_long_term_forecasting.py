@@ -40,7 +40,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         total_loss = []
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, code) in enumerate(vali_loader):
+                self.model.code = code.to(self.device)
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
 
@@ -73,7 +74,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 pred = outputs.detach().cpu()
                 true = batch_y.detach().cpu()
 
-                loss = criterion(pred, true)
+                loss = criterion(pred[:,:,3:4], true[:,:,3:4])
 
                 total_loss.append(loss)
         total_loss = np.average(total_loss)
@@ -106,8 +107,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, code) in enumerate(train_loader):
+                self.model.code = code.to(self.device)
+                #self.model.code
                 iter_count += 1
+                #print(iter_count)
                 model_optim.zero_grad()
                 batch_x = batch_x.float().to(self.device)
 
@@ -145,7 +149,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                    loss = criterion(outputs, batch_y)
+                    loss = criterion(outputs[:,:,3:4], batch_y[:,:,3:4]) # only focus on target of day close price
                     train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
@@ -202,7 +206,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, code ) in enumerate(test_loader):
+                self.model.code = code.to(self.device)
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float().to(self.device)
 

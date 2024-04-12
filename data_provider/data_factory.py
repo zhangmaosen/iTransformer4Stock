@@ -36,10 +36,10 @@ def data_provider(args, flag):
         batch_size = args.batch_size  # bsz for train and valid
         freq = args.freq
 
-    if False:#args.stocks == True:
-        parquet_files = glob.glob(f'{args.root_path}/*.parquet')
+    if args.stocks == True:
+        files = glob.glob(f'{args.root_path}/*.csv')
         ds = []
-        for file_path in parquet_files:
+        for file_path in files:
             data_set = Data(
                 root_path='./',
                 data_path=file_path,

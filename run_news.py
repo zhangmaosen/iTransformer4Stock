@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--itr', type=int, default=40, help='experiments times')
     parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=16, help='batch size of train input data')
-    parser.add_argument('--patience', type=int, default=7, help='early stopping patience')
+    parser.add_argument('--patience', type=int, default=70, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
@@ -92,12 +92,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     args.is_training = 1
-    args.root_path = '/home/userroot/dev/iTransformer/data_prep/'
+    args.root_path = '/home/userroot/dev/iTransformer/data_prep/index_300'
     args.data_path = 'index_300_embedding.csv'
     args.model_id = 'EMB_16_2'
-    args.data = 'custom'
+    args.data = 'stock'
     args.features = 'M'
-    args.seq_len = 16
+    args.seq_len = 5
+    args.label_len = 3
     args.pred_len = 2
     args.e_layers = 6
     args.d_layers = 4
@@ -112,9 +113,10 @@ if __name__ == '__main__':
     args.stocks = True
     args.batch_size = 1
     args.train_epochs = 50
-    args.preq = 't'
+    args.freq = 't'
     args.use_multi_gpu = False
     args.target = 'M'
+
 
     args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 

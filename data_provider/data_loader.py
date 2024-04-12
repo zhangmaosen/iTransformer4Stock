@@ -570,16 +570,17 @@ class Dataset_Stock(Dataset):
 
 
         # Get a list of all parquet files in the folder
-        parquet_file = os.path.join(self.root_path, self.data_path)
+        file = os.path.join(self.root_path, self.data_path)
         #parquet_files = glob.glob(f'{folder}/*.parquet')
 
         
         # Read each file into a dataframe and append to the list
         
-        df_raw = pd.read_parquet(parquet_file)
-        df_raw.rename(columns={0:'date',1:'code'}, inplace=True)
+        df_raw = pd.read_csv(file)
+        
+        #df_raw.rename(columns={0:'date',1:'code'}, inplace=True)
         if self.features == 'M' or self.features == 'MS':
-            cols_data = df_raw.columns[2:] # ignore stock code column
+            cols_data = df_raw.columns[2:] # ignore date code_idx column
             df_data = df_raw[cols_data]
         elif self.features == 'S':
             df_data = df_raw[[self.target]]
@@ -590,7 +591,7 @@ class Dataset_Stock(Dataset):
         if num_train -self.seq_len <= 0 :
             self.data_x = []
             self.data_y = []
-        border1s = [0, min(num_train, num_train + num_valid - self.seq_len - self.pred_len), min(len(df_data) - num_test , len(df_data) - self.seq_len - self.pred_len)]
+        border1s = [0, num_train  - self.seq_len ,  len(df_data) - num_test - self.pred_len]
         border2s = [num_train, num_train + num_valid, len(df_data)]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
@@ -609,17 +610,23 @@ class Dataset_Stock(Dataset):
             data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
             data_stamp = data_stamp.transpose(1, 0)
        
+        df_code_idx = df_raw[['idx']][border1:border2]
+
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]][2:]
             self.scaler.fit(train_data)
             data = self.scaler.transform(df_data)
-            data = np.hstack((data,df_raw['code'].values.astype(int).reshape(len(df_raw['code']),1)))
+            #data = np.hstack((data,df_raw['code'].values.astype(int).reshape(len(df_raw['code']),1)))
         else:
             data = df_data
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
+        #self.code_idx = df_code_idx
+
+        self.code = df_code_idx.iloc[0,0]
+        #print(self.code )
 
     def __getitem__(self, index):
         s_begin = index
@@ -629,10 +636,12 @@ class Dataset_Stock(Dataset):
 
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_y[r_begin:r_end]
-        seq_x_mark = torch.zeros((seq_x.shape[0], 1))
-        seq_y_mark = torch.zeros((seq_x.shape[0], 1))
+        # seq_x_mark = torch.zeros((seq_x.shape[0], 1))
+        # seq_y_mark = torch.zeros((seq_x.shape[0], 1))
+        seq_x_mark = self.data_stamp[s_begin:s_end]
+        seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, self.code
     
     def __len__(self):
         length = len(self.data_x) - self.seq_len - self.pred_len + 1
