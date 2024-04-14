@@ -152,6 +152,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     else:
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
+                    # inverse scalered data of output
+                    data_scaler = train_data.get_scaler(i)
+                    for i in range(outputs.shape[0]):
+                        pred_y = data_scaler.inverse_transform(outputs[i,:,:].squeeze().cpu().detach().numpy()) 
+                        true_y = data_scaler.inverse_transform(batch_y[i,:,:].squeeze().cpu().detach().numpy())
+                        print(f'pred_y: {pred_y[:,3:4]}, true_y: {true_y[:,3:4][-self.args.pred_len:]}')
+
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
@@ -212,7 +219,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, code ) in enumerate(test_loader):
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, code) in enumerate(test_loader):
                 self.model.code = code.to(self.device)
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float().to(self.device)
